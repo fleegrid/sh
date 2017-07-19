@@ -1,8 +1,10 @@
 package sh
 
 import (
+	"bufio"
 	"io"
 	"os/exec"
+	"strings"
 	"text/template"
 )
 
@@ -41,4 +43,41 @@ func Run(tpl string, p interface{}) (out string, err error) {
 
 	out = string(b)
 	return
+}
+
+// ExtractResult extract lines below "------" (6 dash) as command result
+func ExtractResult(out string) string {
+	ret := ""
+	br := bufio.NewReader(strings.NewReader(out))
+
+	mark := false
+
+	for {
+		l, _, err := br.ReadLine()
+		// error occurred, basically EOF
+		if err != nil {
+			break
+		}
+		s := strings.TrimSpace(string(l))
+		// mark 6-dash
+		if strings.Contains(s, "------") {
+			if mark {
+				// clear ret
+				ret = ""
+			} else {
+				// mark
+				mark = true
+			}
+		} else {
+			if mark {
+				// append line
+				if len(ret) > 0 {
+					ret += "\n" + s
+				} else {
+					ret = s
+				}
+			}
+		}
+	}
+	return ret
 }

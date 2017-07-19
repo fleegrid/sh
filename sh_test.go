@@ -27,3 +27,49 @@ func TestSh(t *testing.T) {
 		t.Errorf("%v != DUST", s)
 	}
 }
+
+func TestExtractResult(t *testing.T) {
+	tpl := `
+	#!/bin/sh
+
+	echo "----------"
+	echo "hello"
+	echo "----------"
+	echo " world"
+	`
+	s, err := Run(tpl, nil)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	r := ExtractResult(s)
+
+	if r != "world" {
+		t.Error("not equal")
+	}
+}
+
+func TestExtractResultMultiline(t *testing.T) {
+	tpl := `
+	#!/bin/sh
+
+	echo "----------"
+	echo "hello"
+	echo "----------"
+	echo " world"
+	echo "yes "
+	echo "  ho  "
+	`
+	s, err := Run(tpl, nil)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	r := ExtractResult(s)
+
+	if r != "world\nyes\nho" {
+		t.Error("not equal")
+	}
+}
